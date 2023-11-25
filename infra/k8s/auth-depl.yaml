@@ -15,6 +15,30 @@ spec:
       containers:
         - name: auth
           image: tarasmats/shop/auth
+          env:
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: shop-secret
+                  key: jwt
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: shop-secret
+                  key: POSTGRES_DB
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: shop-secret
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: shop-secret
+                  key: POSTGRES_USER
+          # envFrom:
+          #   - secretRef:
+          #       name: shop-secret
 ---
 apiVersion: v1
 kind: Service
