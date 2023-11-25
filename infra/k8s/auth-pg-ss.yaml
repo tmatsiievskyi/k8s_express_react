@@ -1,0 +1,89 @@
+# apiVersion: apps/v1
+# kind: StatefulSet
+# metadata:
+#   name: auth-pg
+# spec:
+#   serviceName: auth-pg-ss
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: auth-postgress
+#   template:
+#     metadata:
+#       labels:
+#         app: auth-postgress
+#     spec:
+#       containers:
+#         - name: postgress-container
+#           image: postgres:16.1
+#           envFrom:
+#             - secretRef:
+#                 name: auth-pg-secret
+#           # env:
+#           #   - name: POSTGRES_PASSWORD
+#           #     value: "admin"
+#           # ports:
+#           #   - containerPort: 5432
+#           #     name: auth-pg-cli
+#           volumeMounts:
+#             - name: auth-pg-pvc
+#               mountPath: "/data/db"
+
+#   volumeClaimTemplates:
+#     - metadata:
+#         name: auth-pg-pvc
+#       spec:
+#         accessModes: ["ReadWriteOnce"]
+#         resources:
+#           requests:
+#             storage: 100Mi
+apiVersion: apps/v1
+# TODO: StatefulSet
+kind: Deployment
+metadata:
+  name: auth-pg
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-postgress
+  template:
+    metadata:
+      labels:
+        app: auth-postgress
+    spec:
+      containers:
+        - name: postgress-container
+          image: postgres:16.1
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: shop-secret
+                  key: POSTGRES_DB
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: shop-secret
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: shop-secret
+                  key: POSTGRES_USER
+          # envFrom:
+          #   - secretRef:
+          #       name: shop-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-pg-srv
+spec:
+  selector:
+    app: auth-postgress
+  ports:
+    - name: auth-pg
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
